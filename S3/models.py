@@ -1,5 +1,5 @@
 import os
-from peewee import SqliteDatabase, Model, AutoField, CharField, TextField, BooleanField, ForeignKeyField, DateTimeField
+from peewee import SqliteDatabase, Model, AutoField, CharField, TextField, BooleanField, ForeignKeyField, DateTimeField, IntegerField
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -10,16 +10,21 @@ class BaseModel(Model):
         database = db
 
 class Role(BaseModel):
-    id = AutoField()  # Явно объявлен первичный ключ
-    name = CharField(max_length=50, unique=True, null=False)  # Валидация минимальной длины будет в сервисе
+    id = AutoField()
+    name = CharField(max_length=50, unique=True, null=False)
     description = TextField(max_length=200, null=True)
     is_active = BooleanField(default=True, null=False)
 
 class RolePermission(BaseModel):
-    id = AutoField()  # Явно объявлен первичный ключ
-    role_id = ForeignKeyField(Role, backref="role_permissions", null=False, on_delete="CASCADE")  # Явное имя поля
-    permission_id = CharField(max_length=100, null=False)  # ID разрешения из внешнего сервиса
+    id = AutoField()
+    role_id = ForeignKeyField(Role, backref="role_permissions", null=False, on_delete="CASCADE")
+    permission_id = IntegerField(null=False)
     granted_at = DateTimeField(default=datetime.now, null=False)
+
+    class Meta:
+        indexes = (
+            (('role_id', 'permission_id'), True),
+        )
 
 def init_db():
     db.connect()
